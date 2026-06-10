@@ -1,0 +1,53 @@
+ <!DOCTYPE html>
+ <html lang="zh-CN">
+ <head>
+ <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+ <title>资产利旧 - 登录</title>
+ <link rel="stylesheet" href="/static/css/style.css">
+ <style>body{background:linear-gradient(135deg,#667eea 0%,#764ba4 100%);min-height:100vh;display:flex;align-items:center;justify-content:center}</style>
+ </head>
+ <body>
+ <div class="login-box">
+   <h1>资产利旧</h1>
+   <p class="subtitle">Asset Reuse Platform</p>
+   <div class="tabs">
+     <div class="tab active" onclick="switchTab('login')">登录</div>
+     <div class="tab" onclick="switchTab('register')">注册</div>
+   </div>
+   <div id="error" class="error-msg"></div>
+   <form id="loginForm" onsubmit="doLogin(event)">
+     <div class="form-group"><label>工号</label><input type="text" id="emp_no" required placeholder="请输入工号"></div>
+     <div class="form-group"><label>密码</label><input type="password" id="password" required placeholder="请输入密码"></div>
+     <button type="submit" class="btn">登 录</button>
+   </form>
+   <form id="registerForm" class="register-form" onsubmit="doRegister(event)">
+     <div class="form-group"><label>工号</label><input type="text" id="reg_emp_no" required placeholder="请输入工号"></div>
+     <div class="form-group"><label>姓名</label><input type="text" id="reg_name" required placeholder="请输入姓名"></div>
+     <div class="form-group"><label>密码</label><input type="password" id="reg_password" required placeholder="请设置密码"></div>
+     <button type="submit" class="btn">注 册</button>
+   </form>
+ </div>
+ <script>
+ function switchTab(t){
+   document.querySelectorAll('.tab').forEach(function(el,i){el.classList.toggle('active',i===(t==='login'?0:1))});
+   document.getElementById('loginForm').style.display=t==='login'?'block':'none';
+   document.getElementById('registerForm').style.display=t==='register'?'block':'none';
+   document.getElementById('error').style.display='none';
+ }
+ function showError(m){var e=document.getElementById('error');e.textContent=m;e.style.display='block'}
+ async function doLogin(e){
+   e.preventDefault();
+   var form=new FormData();form.append('emp_no',document.getElementById('emp_no').value);form.append('password',document.getElementById('password').value);
+   var r=await fetch('/login',{method:'POST',body:form,redirect:'manual'});
+   if(r.status===200||r.type==='opaqueredirect'){window.location.href='/'}else{showError('工号或密码错误')}
+ }
+ async function doRegister(e){
+   e.preventDefault();
+   var body={emp_no:document.getElementById('reg_emp_no').value,name:document.getElementById('reg_name').value,password:document.getElementById('reg_password').value};
+   var r=await fetch('/api/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+   var d=await r.json();
+   if(d.error){showError(d.error)}else{alert('注册成功，请登录');switchTab('login');document.getElementById('emp_no').value=body.emp_no}
+ }
+ </script>
+ </body>
+ </html>
