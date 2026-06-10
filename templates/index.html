@@ -1,0 +1,121 @@
+ <!DOCTYPE html>
+ <html lang="zh-CN">
+ <head>
+ <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+ <title>资产利旧</title>
+ <link rel="stylesheet" href="/static/css/style.css">
+ </head>
+ <body>
+ <div class="sidebar">
+   <div class="logo"><h1>资产利旧</h1><p>Asset Reuse Platform</p></div>
+   <div class="user-info"><div class="name" id="userName"></div><div class="role" id="userRole"></div></div>
+   <div class="nav-menu">
+     <div class="nav-item" onclick="toggleSub('createSub')"><span class="icon">+</span> 创建表单</div>
+     <div class="nav-sub" id="createSub">
+       <div class="nav-item" data-page="create-reuse" onclick="navTo('create-reuse')"><span class="icon">*</span> 利旧资产</div>
+       <div class="nav-item" data-page="create-demand" onclick="navTo('create-demand')"><span class="icon">*</span> 需求资产</div>
+     </div>
+     <div class="nav-item active" data-page="platform" onclick="navTo('platform')"><span class="icon">&#9832;</span> 利旧平台</div>
+     <div class="nav-item" data-page="demand-list" onclick="navTo('demand-list')"><span class="icon">&#9733;</span> 需求列表</div>
+     <div class="nav-item" data-page="my-assets" onclick="navTo('my-assets')"><span class="icon">&#9776;</span> 我的发布</div>
+     <div class="nav-item" data-page="admin" onclick="navTo('admin')" id="adminNav" style="display:none"><span class="icon">&#9881;</span> 管理后台</div>
+     <div class="nav-item" onclick="window.location.href='/logout'" style="margin-top:20px;border-top:1px solid rgba(255,255,255,.1);padding-top:20px"><span class="icon">&#10140;</span> 退出登录</div>
+   </div>
+ </div>
+ <div class="main">
+   <div class="page-section active" id="page-platform">
+     <div class="page-header"><h2>利旧平台</h2><p>浏览所有可利旧资产信息</p></div>
+     <div class="stats-row" id="statsRow"></div>
+     <div class="toolbar">
+       <input type="text" id="searchKw" placeholder="搜索资产名称/标签号/品牌..." onkeyup="if(event.key==='Enter')loadReuseAssets()">
+       <select id="filterStatus" onchange="loadReuseAssets()"><option value="">全部状态</option><option value="闲置">闲置</option><option value="已利旧">已利旧</option><option value="已失效">已失效</option></select>
+       <button class="btn-primary" onclick="loadReuseAssets()">搜 索</button>
+     </div>
+     <div class="card">
+       <table><thead><tr><th>资产标签号</th><th>资产名称</th><th>品牌/型号</th><th>规格配置</th><th>资产地点</th><th>责任人</th><th>状态</th><th>失效时间</th><th>操作</th></tr></thead>
+       <tbody id="reuseTable"></tbody></table>
+       <div class="pagination" id="reusePagination"></div>
+     </div>
+   </div>
+   <div class="page-section" id="page-create-reuse">
+     <div class="page-header"><h2>创建利旧资产</h2><p>发布需要利旧的资产信息</p></div>
+     <div class="card">
+       <div id="autoFillHint" class="auto-fill-hint"></div>
+       <div class="form-row">
+         <div class="form-group"><label>资产标签号</label><input type="text" id="r_asset_tag" placeholder="输入后自动查询资产平台" onblur="autoFillAsset()"></div>
+         <div class="form-group"><label>资产名称 *</label><input type="text" id="r_asset_name" required></div>
+       </div>
+       <div class="form-row">
+         <div class="form-group"><label>品牌</label><input type="text" id="r_brand"></div>
+         <div class="form-group"><label>型号</label><input type="text" id="r_model"></div>
+       </div>
+       <div class="form-row">
+         <div class="form-group"><label>规格配置</label><input type="text" id="r_spec_config"></div>
+         <div class="form-group"><label>启用日期</label><input type="date" id="r_start_date"></div>
+       </div>
+       <div class="form-row">
+         <div class="form-group"><label>资产地点</label><input type="text" id="r_location"></div>
+         <div class="form-group"><label>利旧失效时间</label><input type="date" id="r_expire_time"></div>
+       </div>
+       <div class="form-row">
+         <div class="form-group"><label>状态</label><select id="r_status"><option value="闲置">闲置</option><option value="已利旧">已利旧</option><option value="已失效">已失效</option></select></div>
+         <div class="form-group"><label>责任人工号</label><input type="text" id="r_owner_emp_no"></div>
+       </div>
+       <div class="form-row"><div class="form-group"><label>责任人姓名</label><input type="text" id="r_owner_name"></div></div>
+       <div class="form-group">
+         <label>上传实物图片（可多张）</label>
+         <div class="upload-area" id="uploadArea1">
+           <input type="file" accept="image/*" multiple onchange="handleUpload(this,'reuseImages')">
+           <div class="hint">点击或拖拽上传图片</div>
+         </div>
+         <div class="image-preview" id="reuseImages"></div>
+       </div>
+       <button class="btn-primary" onclick="submitReuseAsset()" style="margin-top:16px">提交发布</button>
+     </div>
+   </div>
+   <div class="page-section" id="page-create-demand">
+     <div class="page-header"><h2>创建需求资产</h2><p>发布需要的资产需求信息</p></div>
+     <div class="card">
+       <div class="form-row">
+         <div class="form-group"><label>资产名称 *</label><input type="text" id="d_asset_name" required></div>
+         <div class="form-group"><label>资产年限要求</label><input type="text" id="d_asset_age" placeholder="如：3年以内"></div>
+       </div>
+       <div class="form-row">
+         <div class="form-group"><label>需求地点</label><input type="text" id="d_demand_location"></div>
+         <div class="form-group"><label>需求人工号</label><input type="text" id="d_demander_emp_no"></div>
+       </div>
+       <div class="form-row"><div class="form-group"><label>需求人姓名</label><input type="text" id="d_demander_name"></div></div>
+       <button class="btn-primary" onclick="submitDemandAsset()" style="margin-top:16px">提交发布</button>
+     </div>
+   </div>
+   <div class="page-section" id="page-demand-list">
+     <div class="page-header"><h2>需求列表</h2><p>浏览所有资产需求信息</p></div>
+     <div class="toolbar">
+       <input type="text" id="demandSearchKw" placeholder="搜索资产名称/地点..." onkeyup="if(event.key==='Enter')loadDemandAssets()">
+       <select id="demandFilterStatus" onchange="loadDemandAssets()"><option value="">全部状态</option><option value="需求中">需求中</option><option value="已满足">已满足</option><option value="已关闭">已关闭</option></select>
+       <button class="btn-primary" onclick="loadDemandAssets()">搜 索</button>
+     </div>
+     <div class="card">
+       <table><thead><tr><th>资产名称</th><th>年限要求</th><th>需求地点</th><th>需求人</th><th>状态</th><th>发布时间</th></tr></thead>
+       <tbody id="demandTable"></tbody></table>
+       <div class="pagination" id="demandPagination"></div>
+     </div>
+   </div>
+   <div class="page-section" id="page-my-assets">
+     <div class="page-header"><h2>我的发布</h2><p>管理我发布的利旧资产和需求</p></div>
+     <div class="card"><div class="card-title"><span>利旧资产</span></div><table><thead><tr><th>资产标签号</th><th>资产名称</th><th>状态</th><th>失效时间</th><th>操作</th></tr></thead><tbody id="myReuseTable"></tbody></table></div>
+     <div class="card"><div class="card-title"><span>需求资产</span></div><table><thead><tr><th>资产名称</th><th>需求地点</th><th>状态</th><th>操作</th></tr></thead><tbody id="myDemandTable"></tbody></table></div>
+   </div>
+   <div class="page-section" id="page-admin">
+     <div class="page-header"><h2>管理后台</h2><p>管理员可以发布、编辑、删除所有利旧信息</p></div>
+     <div class="card"><div class="card-title"><span>利旧资产管理</span><button class="btn-primary" onclick="navTo('create-reuse')">+ 发布资产</button></div><table><thead><tr><th>ID</th><th>资产标签号</th><th>资产名称</th><th>状态</th><th>创建人</th><th>操作</th></tr></thead><tbody id="adminReuseTable"></tbody></table></div>
+     <div class="card"><div class="card-title"><span>需求资产管理</span><button class="btn-primary" onclick="navTo('create-demand')">+ 发布需求</button></div><table><thead><tr><th>ID</th><th>资产名称</th><th>需求人</th><th>状态</th><th>创建人</th><th>操作</th></tr></thead><tbody id="adminDemandTable"></tbody></table></div>
+     <div class="card"><div class="card-title"><span>用户管理</span></div><table><thead><tr><th>ID</th><th>工号</th><th>姓名</th><th>角色</th><th>操作</th></tr></thead><tbody id="adminUserTable"></tbody></table></div>
+   </div>
+ </div>
+ <div class="modal-overlay" id="detailModal"><div class="modal"><button class="close" onclick="closeModal('detailModal')">&times;</button><h3>资产详情</h3><div id="detailContent"></div></div></div>
+ <div class="modal-overlay" id="editModal"><div class="modal"><button class="close" onclick="closeModal('editModal')">&times;</button><h3>编辑利旧资产</h3><div id="editContent"></div></div></div>
+ <div id="lightbox" onclick="this.style.display='none'"><img id="lightboxImg"></div>
+ <script src="/static/js/app.js"></script>
+ </body>
+ </html>
